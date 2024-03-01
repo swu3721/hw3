@@ -2,6 +2,7 @@
 #define HEAP_H
 #include <functional>
 #include <stdexcept>
+#include <vector>
 
 template <typename T, typename PComparator = std::less<T> >
 class Heap
@@ -61,13 +62,43 @@ public:
 
 private:
   /// Add whatever helper functions and data members you need below
-
-
-
+  std::vector<T> heap_;
+  int m_; //m-ary tree
+  PComparator pcomp_; //Type of comparator?
 
 };
 
 // Add implementation of member functions here
+//Constructor
+template <typename T, typename PComparator>
+Heap<T, PComparator>::Heap(int m, PComparator c) : m_(m), pcomp_(c){
+
+}
+
+//Destructor
+template <typename T, typename PComparator>
+Heap<T, PComparator>::~Heap() {
+
+}
+
+//Push
+template <typename T, typename PComparator>
+void Heap<T, PComparator>::push(const T& item) {
+  heap_.push_back(item);
+  //Need a heapify of sorts
+
+  size_t i = heap_.size() - 1; //Index of item
+  while (i != 0) {
+    size_t parent = (i - 1) / m_; //Parent node of item (divide by amount of children possible)
+    if (pcomp_(heap_[i], heap_[parent])) { //If the comparison is true (index better than parent)
+      std::swap(heap_[i], heap_[parent]); //Swap item and parent
+      i = parent;
+    } else {
+      break;
+    }
+  }
+
+}
 
 
 // We will start top() for you to handle the case of 
@@ -81,12 +112,13 @@ T const & Heap<T,PComparator>::top() const
     // ================================
     // throw the appropriate exception
     // ================================
-
-
+    throw std::underflow_error("Empty Stack");
   }
   // If we get here we know the heap has at least 1 item
   // Add code to return the top element
 
+  //Return top of heap (1st element)
+  return heap_[0];
 
 
 }
@@ -101,14 +133,51 @@ void Heap<T,PComparator>::pop()
     // ================================
     // throw the appropriate exception
     // ================================
-
+    throw std::underflow_error("Empty Stack");
 
   }
+  //Switch last (worst) and first (best) item then remove back
+  //Don't actually need to switch because removing it anyways
+  heap_[0] = heap_.back();
+  heap_.pop_back();
 
 
+  //Trickle down
+  size_t i = 0; //Index of item
+  bool breakLoop = false;
+  while (i <= (heap_.size() - 1)) { //While still possible children
+    size_t levelI = m_* (i); //The level of the children nodes
+    size_t betterChildI = i; //The current better child index
+    for (size_t c = 1; c <= m_; c++) { //For each child
+      size_t currentChildI = levelI + c; //Current Child index
+      if (currentChildI < heap_.size()) { //If it exists in heap (not out of range)
+        if (pcomp_(heap_[currentChildI], heap_[betterChildI])) { //If the current child is better than the "betterChild"
+          betterChildI = currentChildI; //Set "betterChild" to the better child
+        }
+      } else {
+        breakLoop = true; //If any further changes will be out of scope, break from for loop
+        break;
+      }
+    }
+
+    std::swap(heap_[i], heap_[betterChildI]); //Swap the node with its "better" child
+    i = betterChildI; //Change index to better Child index
+    if (breakLoop == true) { //If out of bounds, end function
+      return;
+    }
+  }
 
 }
 
+template <typename T, typename PComparator>
+bool Heap<T, PComparator>::empty() const {
+  return heap_.empty();
+}
+
+template <typename T, typename PComparator>
+size_t Heap<T, PComparator>::size() const {
+  return heap_.size();
+}
 
 
 #endif

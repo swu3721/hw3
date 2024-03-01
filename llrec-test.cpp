@@ -67,7 +67,13 @@ void dealloc(Node* head)
 //   function object struct declarations
 // -----------------------------------------------
 
-
+// Define a predicate object
+struct Predicate {
+    bool operator()(int value) {
+        // Example predicate: remove nodes with odd values
+        return value % 2 == 1;
+    }
+};
 
 
 
@@ -86,10 +92,14 @@ int main(int argc, char* argv[])
     print(head);
 
     // Test out your linked list code
+    Predicate pred;
+    head = llfilter(head, pred);
+    print(head);
 
 
 
-    
+
+    dealloc(head);
     return 0;
 
 }
