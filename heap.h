@@ -136,20 +136,19 @@ void Heap<T,PComparator>::pop()
     throw std::underflow_error("Empty Stack");
 
   }
-  //Switch last (worst) and first (best) item then remove back
-  //Don't actually need to switch because removing it anyways
-  heap_[0] = heap_.back();
+  //Swap first and last item then remove back
+  std::swap(heap_[0], heap_.back());
   heap_.pop_back();
-
 
   //Trickle down
   size_t i = 0; //Index of item
+  size_t leftChild = 1; //Left child index
   bool breakLoop = false;
-  while (i <= (heap_.size() - 1)) { //While still possible children
-    size_t levelI = m_* (i); //The level of the children nodes
-    size_t betterChildI = i; //The current better child index
+  while (leftChild < heap_.size()) { //While still possible children
+
+    size_t betterChildI = leftChild; //The current better child index
     for (size_t c = 1; c <= m_; c++) { //For each child
-      size_t currentChildI = levelI + c; //Current Child index
+      size_t currentChildI = leftChild + c; //Current Child index
       if (currentChildI < heap_.size()) { //If it exists in heap (not out of range)
         if (pcomp_(heap_[currentChildI], heap_[betterChildI])) { //If the current child is better than the "betterChild"
           betterChildI = currentChildI; //Set "betterChild" to the better child
@@ -160,11 +159,19 @@ void Heap<T,PComparator>::pop()
       }
     }
 
-    std::swap(heap_[i], heap_[betterChildI]); //Swap the node with its "better" child
-    i = betterChildI; //Change index to better Child index
-    if (breakLoop == true) { //If out of bounds, end function
-      return;
+    if (pcomp_(heap_[betterChildI], heap_[i])) { //If the better child is better than the parent node/original item
+      std::swap(heap_[i], heap_[betterChildI]); //Swap the node with its "better" child
+      i = betterChildI; //Change index to better Child index
+      leftChild = (i*m_) + 1; //Update left child
+      if (breakLoop == true) { //If out of bounds, end function
+        return;
+      }
+    } else {
+      break;
     }
+    
+    
+    
   }
 
 }
